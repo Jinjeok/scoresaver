@@ -1,4 +1,4 @@
-sheet.mutsuki.kr {
+your-domain.example.com {
     reverse_proxy scoresaver:3000
     encode gzip
 }

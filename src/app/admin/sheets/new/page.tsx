@@ -151,7 +151,7 @@ export default function NewSheetPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-1">
             MusicXML 파일 (선택)
           </h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-600 mb-4">
             MusicXML 파일을 추가하면 인터랙티브 악보 뷰어를 사용할 수 있습니다.
           </p>
           <FileDropzone
@@ -348,7 +348,7 @@ export default function NewSheetPage() {
                   />
                 )}
               </div>
-              <span className="text-xs text-gray-400 truncate max-w-[120px]">
+              <span className="text-xs text-gray-600 truncate max-w-[120px]">
                 {track.file.name}
               </span>
               <button

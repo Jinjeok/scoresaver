@@ -58,7 +58,7 @@ function extractMemoId(name: string): string {
 
 function buildMemoContent(sheet: SheetWithTracks): string {
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://sheet.mutsuki.kr";
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   const lines = [
     `# ${sheet.title}`,

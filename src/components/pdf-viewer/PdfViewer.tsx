@@ -71,20 +71,20 @@ export function PdfViewer({
         <button
           onClick={() => goToPage(currentPage - 1)}
           disabled={currentPage <= 1}
-          className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 cursor-pointer disabled:cursor-default"
+          className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 cursor-pointer disabled:cursor-default text-gray-700"
           title="이전 페이지 (←)"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
 
-        <span className="text-sm text-gray-600 min-w-[80px] text-center">
+        <span className="text-sm font-medium text-gray-800 min-w-[80px] text-center">
           {currentPage} / {numPages}
         </span>
 
         <button
           onClick={() => goToPage(currentPage + 1)}
           disabled={currentPage >= numPages}
-          className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 cursor-pointer disabled:cursor-default"
+          className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 cursor-pointer disabled:cursor-default text-gray-700"
           title="다음 페이지 (→)"
         >
           <ChevronRight className="h-5 w-5" />
@@ -94,18 +94,18 @@ export function PdfViewer({
 
         <button
           onClick={() => setScale((s) => Math.max(0.5, s - 0.2))}
-          className="p-1 rounded hover:bg-gray-200 cursor-pointer"
+          className="p-1 rounded hover:bg-gray-200 cursor-pointer text-gray-700"
         >
           <ZoomOut className="h-5 w-5" />
         </button>
 
-        <span className="text-sm text-gray-600 min-w-[50px] text-center">
+        <span className="text-sm font-medium text-gray-800 min-w-[50px] text-center">
           {Math.round(scale * 100)}%
         </span>
 
         <button
           onClick={() => setScale((s) => Math.min(3.0, s + 0.2))}
-          className="p-1 rounded hover:bg-gray-200 cursor-pointer"
+          className="p-1 rounded hover:bg-gray-200 cursor-pointer text-gray-700"
         >
           <ZoomIn className="h-5 w-5" />
         </button>
@@ -114,7 +114,7 @@ export function PdfViewer({
 
         <button
           onClick={toggleFullscreen}
-          className="p-1 rounded hover:bg-gray-200 cursor-pointer"
+          className="p-1 rounded hover:bg-gray-200 cursor-pointer text-gray-700"
           title="전체화면"
         >
           {isFullscreen ? (
@@ -152,7 +152,7 @@ export function PdfViewer({
       </div>
 
       {/* Keyboard hint */}
-      <p className="text-xs text-gray-400 mt-2">← → 키로 페이지 이동</p>
+      <p className="text-xs text-gray-600 mt-2">← → 키로 페이지 이동</p>
     </div>
   );
 }

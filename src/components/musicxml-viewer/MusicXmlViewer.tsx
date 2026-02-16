@@ -43,7 +43,7 @@ export function MusicXmlViewer({
 
       osmd.setLogLevel("warn");
 
-      // Fetch as ArrayBuffer first, then detect format by magic number
+      // Fetch file and detect format by content (magic bytes)
       const response = await fetch(musicXmlUrl);
       if (!response.ok) throw new Error("파일을 불러올 수 없습니다");
 
@@ -52,7 +52,14 @@ export function MusicXmlViewer({
 
       // ZIP magic number: 0x50 0x4B ("PK") → MXL (compressed MusicXML)
       if (uint8[0] === 0x50 && uint8[1] === 0x4b) {
-        await osmd.load(uint8 as unknown as string);
+        // Create a Blob URL with correct MIME so OSMD detects MXL
+        const blob = new Blob([buffer], { type: "application/vnd.recordare.musicxml" });
+        const blobUrl = URL.createObjectURL(blob);
+        try {
+          await osmd.load(blobUrl);
+        } finally {
+          URL.revokeObjectURL(blobUrl);
+        }
       } else {
         // Plain XML text
         const text = new TextDecoder().decode(buffer);
@@ -122,17 +129,17 @@ export function MusicXmlViewer({
       <div className="flex items-center gap-3 p-2 bg-gray-100 rounded-lg">
         <button
           onClick={() => handleZoom(-0.1)}
-          className="p-1 rounded hover:bg-gray-200 cursor-pointer"
+          className="p-1 rounded hover:bg-gray-200 cursor-pointer text-gray-700"
           title="축소"
         >
           <ZoomOut className="h-5 w-5" />
         </button>
-        <span className="text-sm text-gray-600 min-w-[50px] text-center">
+        <span className="text-sm font-medium text-gray-800 min-w-[50px] text-center">
           {Math.round(zoom * 100)}%
         </span>
         <button
           onClick={() => handleZoom(0.1)}
-          className="p-1 rounded hover:bg-gray-200 cursor-pointer"
+          className="p-1 rounded hover:bg-gray-200 cursor-pointer text-gray-700"
           title="확대"
         >
           <ZoomIn className="h-5 w-5" />
@@ -145,7 +152,7 @@ export function MusicXmlViewer({
           className={`px-3 py-1 text-xs rounded-full transition-colors cursor-pointer ${
             cursorActive
               ? "bg-indigo-600 text-white"
-              : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
           커서 {cursorActive ? "ON" : "OFF"}

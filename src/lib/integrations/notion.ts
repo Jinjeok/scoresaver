@@ -32,7 +32,7 @@ export async function deleteNotionPage(notionPageId: string): Promise<void> {
 }
 
 function buildNotionProperties(sheet: SheetWithTags) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sheet.mutsuki.kr";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const props: Record<string, any> = {

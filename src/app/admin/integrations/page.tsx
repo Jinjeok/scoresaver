@@ -65,7 +65,7 @@ export default function AdminIntegrationsPage() {
               <div>
                 <h2 className="font-semibold text-gray-900">Memos</h2>
                 <p className="text-sm text-gray-500">
-                  memo.mutsuki.kr에 악보 메모 자동 생성
+                  Memos 서버에 악보 메모 자동 생성
                 </p>
               </div>
             </div>

@@ -192,7 +192,7 @@ NOTION_API_KEY=secret_abc123...
 NOTION_DATABASE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 # Memos (선택)
-MEMOS_BASE_URL=https://memo.mutsuki.kr
+MEMOS_BASE_URL=https://your-memos.example.com
 MEMOS_ACCESS_TOKEN=your_access_token_here
 ```
 

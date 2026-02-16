@@ -158,7 +158,7 @@ export default function AdminSheetDetailPage() {
               {sheet.tags.map((tag) => (
                 <span
                   key={tag.id}
-                  className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full"
+                  className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded-full"
                 >
                   {tag.name}
                 </span>

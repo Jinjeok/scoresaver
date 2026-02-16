@@ -2,8 +2,6 @@
 
 음악 악보 관리 웹 서비스. PDF 악보와 음원을 저장/관리하고, 공유 링크를 통해 누구나 열람할 수 있으며, Notion/Memos와 자동 연동됩니다.
 
-**도메인**: `https://sheet.mutsuki.kr`
-
 ## 기술 스택
 
 - **Framework**: Next.js 16 (App Router, TypeScript)

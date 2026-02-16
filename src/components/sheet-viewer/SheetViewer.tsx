@@ -101,7 +101,7 @@ export function SheetViewer({
       {/* Sheet info */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{sheet.title}</h1>
-        <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-600">
+        <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-700">
           {sheet.composer && <span>작곡: {sheet.composer}</span>}
           {sheet.arranger && <span>편곡: {sheet.arranger}</span>}
           {sheet.key_signature && <span>Key: {sheet.key_signature}</span>}
@@ -109,7 +109,7 @@ export function SheetViewer({
           {sheet.tempo_bpm && <span>BPM: {sheet.tempo_bpm}</span>}
         </div>
         {sheet.description && (
-          <p className="mt-2 text-sm text-gray-500">{sheet.description}</p>
+          <p className="mt-2 text-sm text-gray-700">{sheet.description}</p>
         )}
       </div>
 

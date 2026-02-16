@@ -135,12 +135,17 @@ export async function POST(request: NextRequest) {
     // Upload MusicXML if provided
     let musicXmlPath: string | null = null;
     if (musicXmlFile) {
-      musicXmlPath = getMusicXmlPath(sheet.id);
+      const fileName = musicXmlFile.name.toLowerCase();
+      const isMxl = fileName.endsWith(".mxl");
+      const ext = isMxl ? "mxl" : "musicxml";
+      const mxmlContentType = isMxl ? "application/vnd.recordare.musicxml" : "application/xml";
+
+      musicXmlPath = getMusicXmlPath(sheet.id, ext);
       const musicXmlBuffer = Buffer.from(await musicXmlFile.arrayBuffer());
       const { error: mxmlUploadError } = await supabaseAdmin.storage
         .from("musicxml-files")
         .upload(musicXmlPath, musicXmlBuffer, {
-          contentType: "application/xml",
+          contentType: mxmlContentType,
           upsert: true,
         });
 

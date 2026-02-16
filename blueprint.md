@@ -7,5 +7,5 @@
     - bass only 등 옵션으로 관리 (보컬만 있을수도 잇고, 한키 낮춘것도 있을 수 있음)
 4. 될지 안될지는 모르겠지만 악보 싱크 맞추기 (temp에 맞춰서 노래 재생)
 5. 해당 내용들을 notion에 저장할 수 있어야함
-6. [memos](https://usememos.com/) 에도 저장되어있음 (url은 memo.mutsuki.kr)
-7. 해당 서비스는 sheet.mutsuki.kr에 저장할 예정
+6. [memos](https://usememos.com/) 에도 저장되어있음
+7. Docker + Caddy로 배포

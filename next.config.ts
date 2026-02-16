@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
       canvas: { browser: "" },
     },
   },
+  serverBodyMaxSize: 100 * 1024 * 1024, // 100MB for audio uploads
 };
 
 export default nextConfig;

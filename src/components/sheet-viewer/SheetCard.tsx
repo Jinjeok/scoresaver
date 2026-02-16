@@ -14,7 +14,7 @@ export function SheetCard({ sheet, href }: SheetCardProps) {
       className="block bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
     >
       <div className="aspect-[3/4] bg-gray-100 flex items-center justify-center">
-        <FileMusic className="h-16 w-16 text-gray-300" />
+        <FileMusic className="h-16 w-16 text-gray-400" />
       </div>
 
       <div className="p-4">
@@ -30,7 +30,7 @@ export function SheetCard({ sheet, href }: SheetCardProps) {
         </div>
 
         {sheet.composer && (
-          <p className="text-sm text-gray-500 mt-1">{sheet.composer}</p>
+          <p className="text-sm text-gray-700 mt-1">{sheet.composer}</p>
         )}
 
         {sheet.tags.length > 0 && (
@@ -38,7 +38,7 @@ export function SheetCard({ sheet, href }: SheetCardProps) {
             {sheet.tags.map((tag) => (
               <span
                 key={tag.id}
-                className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full"
+                className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded-full"
               >
                 {tag.name}
               </span>
