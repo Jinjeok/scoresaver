@@ -1,0 +1,4 @@
+sheet.mutsuki.kr {
+    reverse_proxy scoresaver:3000
+    encode gzip
+}
