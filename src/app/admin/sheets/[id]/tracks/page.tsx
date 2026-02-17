@@ -6,8 +6,6 @@ import { FileDropzone } from "@/components/shared/FileDropzone";
 import { TRACK_TYPES, type TrackType } from "@/lib/constants/track-types";
 import { Trash2, GripVertical } from "lucide-react";
 import { formatDuration, formatFileSize } from "@/lib/utils/format";
-import { getAudioTrackPath } from "@/lib/utils/storage";
-import { createClient } from "@/lib/supabase/client";
 import type { AudioTrack } from "@/types/sheet";
 
 export default function AdminTracksPage() {
@@ -36,26 +34,38 @@ export default function AdminTracksPage() {
   const handleUpload = async (file: File) => {
     setUploading(true);
     try {
-      const supabase = createClient();
       const mimeType = file.type || "audio/mpeg";
       const ext = mimeType.split("/")[1] || "mp3";
       const trackId = crypto.randomUUID();
-      const storagePath = getAudioTrackPath(params.id as string, trackId, ext);
 
-      // Upload directly to Supabase Storage (bypasses Vercel 4.5MB limit)
-      const { error: uploadError } = await supabase.storage
-        .from("audio-files")
-        .upload(storagePath, file, {
-          contentType: mimeType,
-          upsert: true,
-        });
+      // 1. Get signed upload URL from server (uses service role, bypasses RLS)
+      const urlRes = await fetch(`/api/sheets/${params.id}/tracks/upload-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackId, ext, mimeType }),
+      });
 
-      if (uploadError) {
-        alert(`음원 업로드 실패: ${uploadError.message}`);
+      if (!urlRes.ok) {
+        const err = await urlRes.json();
+        alert(err.error || "업로드 URL 생성 실패");
         return;
       }
 
-      // Create DB record via API (metadata only, no file)
+      const { signedUrl, path: storagePath } = await urlRes.json();
+
+      // 2. Upload file directly to Supabase Storage via signed URL
+      const uploadRes = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": mimeType },
+        body: file,
+      });
+
+      if (!uploadRes.ok) {
+        alert("음원 업로드 실패");
+        return;
+      }
+
+      // 3. Create DB record via API (metadata only)
       const res = await fetch(`/api/sheets/${params.id}/tracks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,8 +88,6 @@ export default function AdminTracksPage() {
       } else {
         const err = await res.json();
         alert(err.error || "트랙 생성 실패");
-        // Clean up uploaded file on DB failure
-        await supabase.storage.from("audio-files").remove([storagePath]);
       }
     } finally {
       setUploading(false);
