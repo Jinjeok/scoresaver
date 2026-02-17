@@ -27,22 +27,22 @@ export default async function AdminSheetsPage() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 제목
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 작곡자
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 태그
               </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">
                 트랙
               </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">
                 상태
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                 등록일
               </th>
             </tr>
@@ -93,7 +93,7 @@ export default async function AdminSheetsPage() {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 text-right text-sm text-gray-400">
+                <td className="px-6 py-4 text-right text-sm text-gray-600">
                   {new Date(sheet.created_at).toLocaleDateString("ko-KR")}
                 </td>
               </tr>
@@ -102,7 +102,7 @@ export default async function AdminSheetsPage() {
         </table>
 
         {(!sheets || sheets.length === 0) && (
-          <div className="px-6 py-12 text-center text-gray-400">
+          <div className="px-6 py-12 text-center text-gray-600">
             등록된 악보가 없습니다. 새 악보를 등록해보세요.
           </div>
         )}

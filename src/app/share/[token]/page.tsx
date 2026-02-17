@@ -1,8 +1,9 @@
+import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { SheetViewer } from "@/components/sheet-viewer/SheetViewer";
-import { Music } from "lucide-react";
+import { Music, Settings, LogIn } from "lucide-react";
 import type { AudioTrackWithUrl } from "@/types/sheet";
 
 interface SharePageProps {
@@ -20,6 +21,20 @@ export default async function SharePage({ params }: SharePageProps) {
   if (!sheets || sheets.length === 0) notFound();
 
   const sheet = sheets[0];
+
+  // Check auth for header nav
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let isAdmin = false;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+    isAdmin = profile?.is_admin ?? false;
+  }
 
   // Get tracks and sync markers via RPC
   const { data: tracks } = await supabase.rpc("get_tracks_by_share_token", {
@@ -62,12 +77,33 @@ export default async function SharePage({ params }: SharePageProps) {
     <div className="min-h-screen bg-gray-50">
       <header className="border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-14 gap-2">
-            <Music className="h-5 w-5 text-indigo-600" />
-            <span className="text-sm font-medium text-gray-900">
-              ScoreSaver
-            </span>
-            <span className="text-xs text-gray-400 ml-1">공유 악보</span>
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-2">
+              <Music className="h-5 w-5 text-indigo-600" />
+              <span className="text-sm font-medium text-gray-900">
+                ScoreSaver
+              </span>
+              <span className="text-xs text-gray-600 ml-1">공유 악보</span>
+            </div>
+            <nav className="flex items-center gap-3">
+              {isAdmin ? (
+                <Link
+                  href="/admin/dashboard"
+                  className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                >
+                  <Settings className="h-4 w-4" />
+                  관리
+                </Link>
+              ) : !user ? (
+                <Link
+                  href="/auth/login"
+                  className="flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700"
+                >
+                  <LogIn className="h-4 w-4" />
+                  로그인
+                </Link>
+              ) : null}
+            </nav>
           </div>
         </div>
       </header>

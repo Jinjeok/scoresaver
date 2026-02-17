@@ -74,7 +74,7 @@ export default function AdminTracksPage() {
   };
 
   if (loading) {
-    return <div className="text-gray-400">로딩 중...</div>;
+    return <div className="text-gray-600">로딩 중...</div>;
   }
 
   return (
@@ -96,10 +96,10 @@ export default function AdminTracksPage() {
                 key={track.id}
                 className="px-6 py-4 flex items-center gap-4"
               >
-                <GripVertical className="h-4 w-4 text-gray-300" />
+                <GripVertical className="h-4 w-4 text-gray-500" />
                 <div className="flex-1">
                   <p className="font-medium text-gray-900">{track.label}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-600">
                     {TRACK_TYPES[track.track_type as TrackType] ||
                       track.track_type}
                     {track.key_shift !== 0 &&
@@ -120,7 +120,7 @@ export default function AdminTracksPage() {
             ))}
           </div>
         ) : (
-          <div className="px-6 py-8 text-center text-gray-400">
+          <div className="px-6 py-8 text-center text-gray-600">
             등록된 트랙이 없습니다
           </div>
         )}
@@ -176,7 +176,7 @@ export default function AdminTracksPage() {
         </div>
 
         {uploading ? (
-          <div className="text-center py-4 text-gray-400">업로드 중...</div>
+          <div className="text-center py-4 text-gray-600">업로드 중...</div>
         ) : (
           <FileDropzone
             accept="audio/*"

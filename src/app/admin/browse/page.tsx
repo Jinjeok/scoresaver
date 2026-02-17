@@ -1,14 +1,16 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { SheetCard } from "@/components/sheet-viewer/SheetCard";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { Search } from "lucide-react";
+import { BrowseContent } from "./BrowseContent";
 
-interface SheetsPageProps {
+interface BrowsePageProps {
   searchParams: Promise<{ search?: string; tag?: string; page?: string }>;
 }
 
-export default async function SheetsPage({ searchParams }: SheetsPageProps) {
+export default async function AdminBrowsePage({
+  searchParams,
+}: BrowsePageProps) {
   const { search, tag, page: pageStr } = await searchParams;
-  const supabase = await createServerSupabaseClient();
+  const supabase = createAdminClient();
   const page = parseInt(pageStr || "1");
   const limit = 12;
   const offset = (page - 1) * limit;
@@ -16,7 +18,6 @@ export default async function SheetsPage({ searchParams }: SheetsPageProps) {
   let query = supabase
     .from("sheets")
     .select("*, sheet_tags(tag_id, tags(id, name))", { count: "exact" })
-    .eq("is_public", true)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -41,6 +42,16 @@ export default async function SheetsPage({ searchParams }: SheetsPageProps) {
     };
   });
 
+  // Generate signed PDF URLs for gallery thumbnails
+  const sheetsWithPdfUrls = await Promise.all(
+    sheets.map(async (sheet) => {
+      const { data: pdfUrlData } = await supabase.storage
+        .from("sheet-pdfs")
+        .createSignedUrl(sheet.pdf_storage_path, 3600);
+      return { ...sheet, pdfSignedUrl: pdfUrlData?.signedUrl ?? null };
+    })
+  );
+
   const totalPages = Math.ceil((count || 0) / limit);
 
   // Fetch all tags for filter
@@ -51,7 +62,7 @@ export default async function SheetsPage({ searchParams }: SheetsPageProps) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">악보 목록</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">악보 둘러보기</h1>
 
       {/* Search & Filter */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -68,11 +79,11 @@ export default async function SheetsPage({ searchParams }: SheetsPageProps) {
         {allTags && allTags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             <a
-              href="/sheets"
+              href="/admin/browse"
               className={`px-3 py-1 text-sm rounded-full transition-colors ${
                 !tag
                   ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
               전체
@@ -80,11 +91,11 @@ export default async function SheetsPage({ searchParams }: SheetsPageProps) {
             {allTags.map((t) => (
               <a
                 key={t.id}
-                href={`/sheets?tag=${encodeURIComponent(t.name)}`}
+                href={`/admin/browse?tag=${encodeURIComponent(t.name)}`}
                 className={`px-3 py-1 text-sm rounded-full transition-colors ${
                   tag === t.name
                     ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
                 {t.name}
@@ -94,45 +105,13 @@ export default async function SheetsPage({ searchParams }: SheetsPageProps) {
         )}
       </div>
 
-      {/* Sheet Grid */}
-      {sheets.length > 0 ? (
-        <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {sheets.map((sheet) => (
-              <SheetCard
-                key={sheet.id}
-                sheet={sheet}
-                href={`/sheets/${sheet.id}`}
-              />
-            ))}
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-8">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <a
-                  key={p}
-                  href={`/sheets?page=${p}${search ? `&search=${search}` : ""}${tag ? `&tag=${tag}` : ""}`}
-                  className={`px-3 py-1 rounded text-sm ${
-                    p === page
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {p}
-                </a>
-              ))}
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="text-center py-16 text-gray-600">
-          {search || tag
-            ? "검색 결과가 없습니다"
-            : "공개된 악보가 없습니다"}
-        </div>
-      )}
+      <BrowseContent
+        sheets={sheetsWithPdfUrls}
+        page={page}
+        totalPages={totalPages}
+        search={search}
+        tag={tag}
+      />
     </div>
   );
 }

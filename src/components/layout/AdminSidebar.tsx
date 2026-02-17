@@ -4,15 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  Eye,
   FileMusic,
   Tags,
   Link2,
   Music,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 const navItems = [
   { href: "/admin/dashboard", label: "대시보드", icon: LayoutDashboard },
+  { href: "/admin/browse", label: "악보 둘러보기", icon: Eye },
   { href: "/admin/sheets", label: "악보 관리", icon: FileMusic },
   { href: "/admin/tags", label: "태그 관리", icon: Tags },
   { href: "/admin/integrations", label: "연동 관리", icon: Link2 },
@@ -53,12 +56,16 @@ export function AdminSidebar() {
       </nav>
 
       <div className="p-4 border-t border-gray-700">
-        <Link
-          href="/"
-          className="text-sm text-gray-400 hover:text-white transition-colors"
+        <button
+          onClick={async () => {
+            await fetch("/api/auth/signout", { method: "POST" });
+            window.location.href = "/auth/login";
+          }}
+          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
         >
-          공개 사이트로 이동
-        </Link>
+          <LogOut className="h-4 w-4" />
+          로그아웃
+        </button>
       </div>
     </aside>
   );

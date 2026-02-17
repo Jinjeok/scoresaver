@@ -14,7 +14,7 @@ export function SheetCard({ sheet, href }: SheetCardProps) {
       className="block bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
     >
       <div className="aspect-[3/4] bg-gray-100 flex items-center justify-center">
-        <FileMusic className="h-16 w-16 text-gray-400" />
+        <FileMusic className="h-16 w-16 text-gray-500" />
       </div>
 
       <div className="p-4">
@@ -25,7 +25,7 @@ export function SheetCard({ sheet, href }: SheetCardProps) {
           {sheet.is_public ? (
             <Eye className="h-4 w-4 text-green-500 shrink-0" />
           ) : (
-            <EyeOff className="h-4 w-4 text-gray-400 shrink-0" />
+            <EyeOff className="h-4 w-4 text-gray-500 shrink-0" />
           )}
         </div>
 

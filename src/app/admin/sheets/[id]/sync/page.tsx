@@ -93,7 +93,7 @@ export default function AdminSyncPage() {
   };
 
   if (loading) {
-    return <div className="text-gray-400">로딩 중...</div>;
+    return <div className="text-gray-600">로딩 중...</div>;
   }
 
   return (
@@ -174,16 +174,16 @@ export default function AdminSyncPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                   시간
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                   페이지
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                   섹션
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">
                   삭제
                 </th>
               </tr>
@@ -213,7 +213,7 @@ export default function AdminSyncPage() {
             </tbody>
           </table>
         ) : (
-          <div className="px-6 py-8 text-center text-gray-400">
+          <div className="px-6 py-8 text-center text-gray-600">
             등록된 마커가 없습니다
           </div>
         )}

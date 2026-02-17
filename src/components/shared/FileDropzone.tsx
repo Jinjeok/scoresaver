@@ -53,12 +53,12 @@ export function FileDropzone({
       )}
     >
       <label className="cursor-pointer flex flex-col items-center gap-2">
-        <Upload className="h-8 w-8 text-gray-400" />
+        <Upload className="h-8 w-8 text-gray-500" />
         <p className="text-sm text-gray-600">
           {currentFile ? currentFile.name : label}
         </p>
         {currentFile && (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-600">
             {(currentFile.size / (1024 * 1024)).toFixed(1)} MB
           </p>
         )}

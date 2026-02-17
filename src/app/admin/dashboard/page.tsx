@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { FileMusic, Music2, Eye, EyeOff } from "lucide-react";
+import { FileMusic, Music2, Eye, EyeOff, ExternalLink } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
@@ -19,7 +20,7 @@ export default async function DashboardPage() {
 
   const { data: recentSheets } = await supabase
     .from("sheets")
-    .select("id, title, composer, is_public, created_at")
+    .select("id, title, composer, is_public, share_token, created_at")
     .order("created_at", { ascending: false })
     .limit(5);
 
@@ -67,7 +68,7 @@ export default async function DashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                <p className="text-sm text-gray-500">{stat.label}</p>
+                <p className="text-sm text-gray-700">{stat.label}</p>
               </div>
             </div>
           </div>
@@ -83,14 +84,19 @@ export default async function DashboardPage() {
         </div>
         <div className="divide-y divide-gray-200">
           {recentSheets?.map((sheet) => (
-            <div
+            <Link
               key={sheet.id}
-              className="px-6 py-4 flex items-center justify-between"
+              href={`/share/${sheet.share_token}`}
+              target="_blank"
+              className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
             >
               <div>
-                <p className="font-medium text-gray-900">{sheet.title}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-gray-900">{sheet.title}</p>
+                  <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                </div>
                 {sheet.composer && (
-                  <p className="text-sm text-gray-500">{sheet.composer}</p>
+                  <p className="text-sm text-gray-700">{sheet.composer}</p>
                 )}
               </div>
               <div className="flex items-center gap-3">
@@ -103,14 +109,14 @@ export default async function DashboardPage() {
                     비공개
                   </span>
                 )}
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-600">
                   {new Date(sheet.created_at).toLocaleDateString("ko-KR")}
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
           {(!recentSheets || recentSheets.length === 0) && (
-            <div className="px-6 py-8 text-center text-gray-400">
+            <div className="px-6 py-8 text-center text-gray-600">
               등록된 악보가 없습니다
             </div>
           )}

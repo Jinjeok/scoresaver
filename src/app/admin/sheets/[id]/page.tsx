@@ -76,7 +76,7 @@ export default function AdminSheetDetailPage() {
   };
 
   if (loading) {
-    return <div className="text-gray-400">로딩 중...</div>;
+    return <div className="text-gray-600">로딩 중...</div>;
   }
 
   if (!sheet) {
@@ -174,7 +174,7 @@ export default function AdminSheetDetailPage() {
               <h2 className="text-lg font-semibold text-gray-900">공유 링크</h2>
               <button
                 onClick={regenerateToken}
-                className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer"
+                className="text-xs text-gray-700 hover:text-gray-900 cursor-pointer"
               >
                 <RefreshCw className="h-3 w-3 inline mr-1" />
                 재생성

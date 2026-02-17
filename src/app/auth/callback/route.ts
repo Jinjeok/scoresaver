@@ -34,7 +34,7 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.redirect(origin);
+    return NextResponse.redirect(`${origin}/auth/login?error=not_admin`);
   }
 
   console.error("[auth/callback] no code provided");

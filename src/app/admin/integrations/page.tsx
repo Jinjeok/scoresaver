@@ -39,7 +39,7 @@ export default function AdminIntegrationsPage() {
               </div>
               <div>
                 <h2 className="font-semibold text-gray-900">Notion</h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-700">
                   악보 정보를 Notion 데이터베이스에 자동 동기화
                 </p>
               </div>
@@ -47,10 +47,10 @@ export default function AdminIntegrationsPage() {
             {notionConfigured ? (
               <CheckCircle2 className="h-5 w-5 text-green-500" />
             ) : (
-              <XCircle className="h-5 w-5 text-gray-300" />
+              <XCircle className="h-5 w-5 text-gray-500" />
             )}
           </div>
-          <p className="mt-3 text-xs text-gray-400">
+          <p className="mt-3 text-xs text-gray-600">
             환경변수 NOTION_API_KEY와 NOTION_DATABASE_ID가 설정되어야 합니다.
           </p>
         </div>
@@ -64,7 +64,7 @@ export default function AdminIntegrationsPage() {
               </div>
               <div>
                 <h2 className="font-semibold text-gray-900">Memos</h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-700">
                   Memos 서버에 악보 메모 자동 생성
                 </p>
               </div>
@@ -72,10 +72,10 @@ export default function AdminIntegrationsPage() {
             {memosConfigured ? (
               <CheckCircle2 className="h-5 w-5 text-green-500" />
             ) : (
-              <XCircle className="h-5 w-5 text-gray-300" />
+              <XCircle className="h-5 w-5 text-gray-500" />
             )}
           </div>
-          <p className="mt-3 text-xs text-gray-400">
+          <p className="mt-3 text-xs text-gray-600">
             환경변수 MEMOS_BASE_URL과 MEMOS_ACCESS_TOKEN이 설정되어야 합니다.
           </p>
         </div>

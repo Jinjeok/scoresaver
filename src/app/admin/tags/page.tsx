@@ -69,7 +69,7 @@ export default function AdminTagsPage() {
             </span>
           ))}
           {tags.length === 0 && (
-            <p className="text-gray-400">등록된 태그가 없습니다</p>
+            <p className="text-gray-600">등록된 태그가 없습니다</p>
           )}
         </div>
       </div>

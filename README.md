@@ -100,19 +100,23 @@ UPDATE public.profiles SET is_admin = true WHERE email = 'your@email.com';
 
 ### 7. 개발 서버 실행
 
+`.env.local`의 `NEXT_PUBLIC_SITE_URL`이 `http://localhost:3000`인지 확인한 후:
+
 ```bash
 npm run dev
 ```
 
-`http://localhost:3000`에서 확인할 수 있습니다.
+http://localhost:3000 에서 확인할 수 있습니다. Turbopack 기반으로 HMR이 지원됩니다.
+
+서버를 중지하려면 터미널에서 `Ctrl+C`를 누르세요.
 
 ## 주요 스크립트
 
 | 명령어 | 설명 |
 |--------|------|
-| `npm run dev` | 개발 서버 (Turbopack) |
-| `npm run build` | 프로덕션 빌드 |
-| `npm run start` | 프로덕션 서버 실행 |
+| `npm run dev` | 개발 서버 실행 (Turbopack, http://localhost:3000) |
+| `npm run build` | 프로덕션 빌드 (`standalone` 출력) |
+| `npm run start` | 프로덕션 서버 실행 (빌드 후) |
 | `npm run lint` | ESLint 검사 |
 | `npx tsc --noEmit` | TypeScript 타입 체크 |
 
@@ -169,8 +173,9 @@ GitHub `main` 브랜치에 push하면 자동으로:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `NOTION_API_KEY`, `NOTION_DATABASE_ID`
-- `MEMOS_BASE_URL`, `MEMOS_ACCESS_TOKEN`
+- `NEXT_PUBLIC_SITE_URL` (프로덕션 도메인 URL)
+- `NOTION_API_KEY`, `NOTION_DATABASE_ID` (선택)
+- `MEMOS_BASE_URL`, `MEMOS_ACCESS_TOKEN` (선택)
 
 ## Supabase Storage 버킷
 

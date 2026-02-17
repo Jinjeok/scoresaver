@@ -33,11 +33,35 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect admin routes
-  if (request.nextUrl.pathname.startsWith("/admin") && !user) {
+  const pathname = request.nextUrl.pathname;
+
+  // Public paths that don't require authentication
+  const isPublicPath =
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/share") ||
+    pathname.startsWith("/api");
+
+  // Redirect unauthenticated users to login (except public paths)
+  if (!isPublicPath && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
+  }
+
+  // Protect admin routes: require is_admin flag
+  if (pathname.startsWith("/admin") && user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile?.is_admin) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/login";
+      url.searchParams.set("error", "not_admin");
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;
