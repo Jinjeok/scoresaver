@@ -201,20 +201,20 @@ export default function AdminSheetDetailPage() {
                 <Settings className="h-4 w-4" />
                 싱크 마커 관리
               </Link>
-              <button
-                onClick={syncNotion}
-                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-500 rounded-lg text-sm text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer text-left"
+              <div
+                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-400 cursor-not-allowed"
+                title="업데이트 예정"
               >
                 <RefreshCw className="h-4 w-4" />
                 Notion 동기화
-              </button>
-              <button
-                onClick={syncMemos}
-                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-500 rounded-lg text-sm text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer text-left"
+              </div>
+              <div
+                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-400 cursor-not-allowed"
+                title="업데이트 예정"
               >
                 <RefreshCw className="h-4 w-4" />
                 Memos 동기화
-              </button>
+              </div>
             </div>
           </div>
         </div>
