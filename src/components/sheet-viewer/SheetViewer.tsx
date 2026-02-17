@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, ChevronDown } from "lucide-react";
 import { AudioPlayer } from "@/components/audio-player/AudioPlayer";
 import type { AudioPlayerHandle } from "@/components/audio-player/AudioPlayer";
 import { useSyncPlayback } from "@/lib/hooks/useSyncPlayback";
@@ -68,6 +68,7 @@ export function SheetViewer({
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
+  const [selectedTrackIndex, setSelectedTrackIndex] = useState(0);
 
   const { currentPage: syncPage, handleTimeUpdate } = useSyncPlayback({
     markers: syncMarkers,
@@ -173,9 +174,28 @@ export function SheetViewer({
           fullscreenExtra={
             tracks.length > 0 ? (
               <div className="flex items-center gap-2">
+                {/* Track selector */}
+                {tracks.length > 1 && (
+                  <div className="relative">
+                    <select
+                      value={selectedTrackIndex}
+                      onChange={(e) => {
+                        const idx = parseInt(e.target.value);
+                        setSelectedTrackIndex(idx);
+                        audioPlayerRef.current?.selectTrack(idx);
+                      }}
+                      className="appearance-none bg-gray-700 text-gray-200 text-xs pl-2 pr-6 py-1 rounded cursor-pointer border-none outline-none"
+                    >
+                      {tracks.map((t, i) => (
+                        <option key={t.id} value={i}>{t.label}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-1 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400 pointer-events-none" />
+                  </div>
+                )}
                 <button
                   onClick={() => audioPlayerRef.current?.togglePlay()}
-                  className="p-1.5 rounded hover:bg-gray-700 text-gray-500 cursor-pointer"
+                  className="p-1.5 rounded hover:bg-gray-700 text-gray-300 cursor-pointer"
                   title={isAudioPlaying ? "정지 (Space)" : "재생 (Space)"}
                 >
                   {isAudioPlaying ? (
@@ -213,7 +233,7 @@ export function SheetViewer({
 
       {/* Audio Player */}
       {tracks.length > 0 && (
-        <AudioPlayer ref={audioPlayerRef} tracks={tracks} onTimeUpdate={onTimeUpdate} onPlayStateChange={setIsAudioPlaying} onDurationChange={setAudioDuration} />
+        <AudioPlayer ref={audioPlayerRef} tracks={tracks} onTimeUpdate={onTimeUpdate} onPlayStateChange={setIsAudioPlaying} onDurationChange={setAudioDuration} onTrackChange={setSelectedTrackIndex} />
       )}
     </div>
   );

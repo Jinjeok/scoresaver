@@ -58,23 +58,44 @@ export default function NewSheetPage() {
 
       const sheet = await res.json();
 
-      // Upload audio tracks
-      for (const track of audioTracks) {
-        const trackBody = new FormData();
-        trackBody.append("audio", track.file);
-        trackBody.append(
-          "metadata",
-          JSON.stringify({
+      // Upload audio tracks via signed URL
+      for (let i = 0; i < audioTracks.length; i++) {
+        const track = audioTracks[i];
+        const mimeType = track.file.type || "audio/mpeg";
+        const ext = mimeType.split("/")[1] || "mp3";
+        const trackId = crypto.randomUUID();
+
+        // Get signed upload URL
+        const urlRes = await fetch(`/api/sheets/${sheet.id}/tracks/upload-url`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ trackId, ext, mimeType }),
+        });
+        if (!urlRes.ok) continue;
+
+        const { signedUrl, path: storagePath } = await urlRes.json();
+
+        // Upload file directly to Supabase Storage
+        const uploadRes = await fetch(signedUrl, {
+          method: "PUT",
+          headers: { "Content-Type": mimeType },
+          body: track.file,
+        });
+        if (!uploadRes.ok) continue;
+
+        // Create DB record
+        await fetch(`/api/sheets/${sheet.id}/tracks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             label: track.label,
             track_type: track.track_type,
             key_shift: track.key_shift,
-            sort_order: audioTracks.indexOf(track),
-          })
-        );
-
-        await fetch(`/api/sheets/${sheet.id}/tracks`, {
-          method: "POST",
-          body: trackBody,
+            sort_order: i,
+            storage_path: storagePath,
+            mime_type: mimeType,
+            file_size_bytes: track.file.size,
+          }),
         });
       }
 

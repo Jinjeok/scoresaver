@@ -17,6 +17,8 @@ export interface AudioPlayerHandle {
   togglePlay: () => void;
   seek: (timeSec: number) => void;
   getTime: () => { currentTime: number; duration: number };
+  selectTrack: (index: number) => void;
+  getSelectedTrackIndex: () => number;
 }
 
 interface AudioPlayerProps {
@@ -24,10 +26,11 @@ interface AudioPlayerProps {
   onTimeUpdate?: (currentTimeMs: number) => void;
   onPlayStateChange?: (isPlaying: boolean) => void;
   onDurationChange?: (durationSec: number) => void;
+  onTrackChange?: (index: number) => void;
 }
 
 export const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
-  function AudioPlayer({ tracks, onTimeUpdate, onPlayStateChange, onDurationChange }, ref) {
+  function AudioPlayer({ tracks, onTimeUpdate, onPlayStateChange, onDurationChange, onTrackChange }, ref) {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [selectedTrackIndex, setSelectedTrackIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -42,7 +45,8 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     useEffect(() => {
       setIsPlaying(false); // eslint-disable-line react-hooks/set-state-in-effect
       setCurrentTime(0);
-    }, [selectedTrackIndex]);
+      onTrackChange?.(selectedTrackIndex);
+    }, [selectedTrackIndex, onTrackChange]);
 
     const handleTimeUpdate = useCallback(() => {
       const audio = audioRef.current;
@@ -76,7 +80,15 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
       duration,
     }), [currentTime, duration]);
 
-    useImperativeHandle(ref, () => ({ togglePlay, seek, getTime }), [togglePlay, seek, getTime]);
+    const selectTrack = useCallback((index: number) => {
+      if (index >= 0 && index < tracks.length) {
+        setSelectedTrackIndex(index);
+      }
+    }, [tracks.length]);
+
+    const getSelectedTrackIndex = useCallback(() => selectedTrackIndex, [selectedTrackIndex]);
+
+    useImperativeHandle(ref, () => ({ togglePlay, seek, getTime, selectTrack, getSelectedTrackIndex }), [togglePlay, seek, getTime, selectTrack, getSelectedTrackIndex]);
 
     const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
       const audio = audioRef.current;
