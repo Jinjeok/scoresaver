@@ -45,7 +45,7 @@ export function AdminSidebar() {
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
                 isActive
                   ? "bg-indigo-600 text-white"
-                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  : "text-gray-500 hover:bg-gray-800 hover:text-white"
               )}
             >
               <item.icon className="h-5 w-5" />

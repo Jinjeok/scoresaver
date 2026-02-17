@@ -24,7 +24,7 @@ export function ShareLinkCopier({ shareToken }: ShareLinkCopierProps) {
         type="text"
         value={shareUrl}
         readOnly
-        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-600"
+        className="flex-1 px-3 py-2 border border-gray-500 rounded-lg text-sm bg-gray-50 text-gray-600"
       />
       <button
         onClick={handleCopy}

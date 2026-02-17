@@ -177,7 +177,7 @@ export default function NewSheetPage() {
               value={formData.title}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
 
@@ -190,7 +190,7 @@ export default function NewSheetPage() {
                 name="composer"
                 value={formData.composer}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div>
@@ -201,7 +201,7 @@ export default function NewSheetPage() {
                 name="arranger"
                 value={formData.arranger}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function NewSheetPage() {
                 name="genre"
                 value={formData.genre}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div>
@@ -227,7 +227,7 @@ export default function NewSheetPage() {
                 value={formData.key_signature}
                 onChange={handleChange}
                 placeholder="C major"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div>
@@ -239,7 +239,7 @@ export default function NewSheetPage() {
                 value={formData.time_signature}
                 onChange={handleChange}
                 placeholder="4/4"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
           </div>
@@ -254,7 +254,7 @@ export default function NewSheetPage() {
                 type="number"
                 value={formData.tempo_bpm}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div>
@@ -266,7 +266,7 @@ export default function NewSheetPage() {
                 value={formData.tags}
                 onChange={handleChange}
                 placeholder="찬양, 워십, CCM"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
           </div>
@@ -280,7 +280,7 @@ export default function NewSheetPage() {
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
 
@@ -291,7 +291,7 @@ export default function NewSheetPage() {
               checked={formData.is_public}
               onChange={handleChange}
               id="is_public"
-              className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="rounded border-gray-500 text-indigo-600 focus:ring-indigo-500"
             />
             <label htmlFor="is_public" className="text-sm text-gray-700">
               공개 악보로 등록
@@ -317,14 +317,14 @@ export default function NewSheetPage() {
                     updateAudioTrack(index, "label", e.target.value)
                   }
                   placeholder="라벨"
-                  className="px-2 py-1 border border-gray-300 rounded text-sm"
+                  className="px-2 py-1 border border-gray-500 rounded text-sm"
                 />
                 <select
                   value={track.track_type}
                   onChange={(e) =>
                     updateAudioTrack(index, "track_type", e.target.value)
                   }
-                  className="px-2 py-1 border border-gray-300 rounded text-sm"
+                  className="px-2 py-1 border border-gray-500 rounded text-sm"
                 >
                   {Object.entries(TRACK_TYPES).map(([key, label]) => (
                     <option key={key} value={key}>
@@ -344,7 +344,7 @@ export default function NewSheetPage() {
                       )
                     }
                     placeholder="반음"
-                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                    className="px-2 py-1 border border-gray-500 rounded text-sm"
                   />
                 )}
               </div>

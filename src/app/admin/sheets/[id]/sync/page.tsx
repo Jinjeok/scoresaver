@@ -126,7 +126,7 @@ export default function AdminSyncPage() {
               value={newTimestamp}
               onChange={(e) => setNewTimestamp(e.target.value)}
               placeholder="0.0"
-              className="w-28 px-2 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-28 px-2 py-2 border border-gray-500 rounded-lg text-sm"
             />
           </div>
           <div>
@@ -138,7 +138,7 @@ export default function AdminSyncPage() {
               value={newPage}
               onChange={(e) => setNewPage(e.target.value)}
               placeholder="1"
-              className="w-20 px-2 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-20 px-2 py-2 border border-gray-500 rounded-lg text-sm"
             />
           </div>
           <div className="flex-1">
@@ -149,7 +149,7 @@ export default function AdminSyncPage() {
               value={newSection}
               onChange={(e) => setNewSection(e.target.value)}
               placeholder="Intro, Verse 1..."
-              className="w-full px-2 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-2 py-2 border border-gray-500 rounded-lg text-sm"
             />
           </div>
           <button

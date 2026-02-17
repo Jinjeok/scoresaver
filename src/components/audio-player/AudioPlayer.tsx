@@ -140,7 +140,7 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
                   "px-3 py-1 text-xs rounded-full transition-colors cursor-pointer",
                   i === selectedTrackIndex
                     ? "bg-indigo-600 text-white"
-                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    : "bg-gray-700 text-gray-500 hover:bg-gray-600"
                 )}
               >
                 {track.label}

@@ -207,7 +207,7 @@ export function PdfViewer({
   const activeScale = scale ?? 1;
 
   const btnClass = isFullscreen
-    ? "p-1 rounded hover:bg-gray-700 disabled:opacity-30 cursor-pointer disabled:cursor-default text-gray-300"
+    ? "p-1 rounded hover:bg-gray-700 disabled:opacity-30 cursor-pointer disabled:cursor-default text-gray-500"
     : "p-1 rounded hover:bg-gray-200 disabled:opacity-30 cursor-pointer disabled:cursor-default text-gray-700";
 
   return (
@@ -262,7 +262,7 @@ export function PdfViewer({
 
           <div
             className={`border-l h-5 mx-1 ${
-              isFullscreen ? "border-gray-600" : "border-gray-300"
+              isFullscreen ? "border-gray-600" : "border-gray-500"
             }`}
           />
 
@@ -294,7 +294,7 @@ export function PdfViewer({
           {isFullscreen && fullscreenExtra}
 
           {!isFullscreen && (
-            <div className="border-l border-gray-300 h-5 mx-1" />
+            <div className="border-l border-gray-500 h-5 mx-1" />
           )}
 
           <button
@@ -356,7 +356,7 @@ export function PdfViewer({
                       else pageRefs.current.delete(pageNum);
                     }}
                     className={
-                      pageNum < numPages ? "border-b border-gray-300" : ""
+                      pageNum < numPages ? "border-b border-gray-500" : ""
                     }
                   >
                     <Page

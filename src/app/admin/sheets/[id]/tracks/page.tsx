@@ -140,7 +140,7 @@ export default function AdminTracksPage() {
             <select
               value={newTrackType}
               onChange={(e) => setNewTrackType(e.target.value as TrackType)}
-              className="w-full px-2 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-2 py-2 border border-gray-500 rounded-lg text-sm"
             >
               {Object.entries(TRACK_TYPES).map(([key, label]) => (
                 <option key={key} value={key}>
@@ -157,7 +157,7 @@ export default function AdminTracksPage() {
               value={newLabel}
               onChange={(e) => setNewLabel(e.target.value)}
               placeholder={TRACK_TYPES[newTrackType]}
-              className="w-full px-2 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-2 py-2 border border-gray-500 rounded-lg text-sm"
             />
           </div>
           {newTrackType === "key_shifted" && (
@@ -169,7 +169,7 @@ export default function AdminTracksPage() {
                 type="number"
                 value={newKeyShift}
                 onChange={(e) => setNewKeyShift(parseInt(e.target.value) || 0)}
-                className="w-full px-2 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full px-2 py-2 border border-gray-500 rounded-lg text-sm"
               />
             </div>
           )}

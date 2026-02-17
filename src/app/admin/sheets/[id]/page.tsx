@@ -90,7 +90,7 @@ export default function AdminSheetDetailPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={toggleVisibility}
-            className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-3 py-2 border border-gray-500 rounded-lg text-sm hover:bg-gray-50 transition-colors cursor-pointer"
           >
             {sheet.is_public ? (
               <>
@@ -189,28 +189,28 @@ export default function AdminSheetDetailPage() {
             <div className="space-y-2">
               <Link
                 href={`/admin/sheets/${sheet.id}/tracks`}
-                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-500 rounded-lg text-sm hover:bg-gray-50 transition-colors"
               >
                 <Music2 className="h-4 w-4" />
                 음원 트랙 관리 ({sheet.audio_tracks?.length || 0})
               </Link>
               <Link
                 href={`/admin/sheets/${sheet.id}/sync`}
-                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-500 rounded-lg text-sm hover:bg-gray-50 transition-colors"
               >
                 <Settings className="h-4 w-4" />
                 싱크 마커 관리
               </Link>
               <button
                 onClick={syncNotion}
-                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors cursor-pointer text-left"
+                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-500 rounded-lg text-sm hover:bg-gray-50 transition-colors cursor-pointer text-left"
               >
                 <RefreshCw className="h-4 w-4" />
                 Notion 동기화
               </button>
               <button
                 onClick={syncMemos}
-                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors cursor-pointer text-left"
+                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-500 rounded-lg text-sm hover:bg-gray-50 transition-colors cursor-pointer text-left"
               >
                 <RefreshCw className="h-4 w-4" />
                 Memos 동기화

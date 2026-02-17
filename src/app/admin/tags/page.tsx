@@ -42,7 +42,7 @@ export default function AdminTagsPage() {
           value={newTag}
           onChange={(e) => setNewTag(e.target.value)}
           placeholder="새 태그 이름"
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          className="flex-1 px-3 py-2 border border-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
         />
         <button
           type="submit"

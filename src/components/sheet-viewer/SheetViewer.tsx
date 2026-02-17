@@ -175,7 +175,7 @@ export function SheetViewer({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => audioPlayerRef.current?.togglePlay()}
-                  className="p-1.5 rounded hover:bg-gray-700 text-gray-300 cursor-pointer"
+                  className="p-1.5 rounded hover:bg-gray-700 text-gray-500 cursor-pointer"
                   title={isAudioPlaying ? "정지 (Space)" : "재생 (Space)"}
                 >
                   {isAudioPlaying ? (

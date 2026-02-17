@@ -238,14 +238,14 @@ export function MusicXmlViewer({
           <ZoomIn className="h-5 w-5" />
         </button>
 
-        <div className="border-l border-gray-300 h-6 mx-2" />
+        <div className="border-l border-gray-500 h-6 mx-2" />
 
         <button
           onClick={toggleCursor}
           className={`px-3 py-1 text-xs rounded-full transition-colors cursor-pointer ${
             cursorActive
               ? "bg-indigo-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-500"
           }`}
         >
           커서 {cursorActive ? "ON" : "OFF"}
@@ -268,7 +268,7 @@ export function MusicXmlViewer({
           </>
         )}
 
-        <div className="border-l border-gray-300 h-6 mx-2" />
+        <div className="border-l border-gray-500 h-6 mx-2" />
 
         <button
           onClick={toggleFullscreen}

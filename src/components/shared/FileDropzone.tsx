@@ -49,7 +49,7 @@ export function FileDropzone({
         "border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer",
         isDragging
           ? "border-indigo-500 bg-indigo-50"
-          : "border-gray-300 hover:border-gray-400"
+          : "border-gray-500 hover:border-gray-400"
       )}
     >
       <label className="cursor-pointer flex flex-col items-center gap-2">
