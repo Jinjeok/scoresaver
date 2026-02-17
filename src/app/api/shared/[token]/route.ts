@@ -25,6 +25,28 @@ export async function GET(
 
     const sheet = sheets[0];
 
+    // If sheet is not public, require admin login
+    if (!sheet.is_public) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        return NextResponse.json(
+          { error: "login_required" },
+          { status: 401 }
+        );
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+      if (!profile?.is_admin) {
+        return NextResponse.json(
+          { error: "악보를 찾을 수 없습니다" },
+          { status: 404 }
+        );
+      }
+    }
+
     // Get tracks via RPC
     const { data: tracks } = await supabase.rpc(
       "get_tracks_by_share_token",

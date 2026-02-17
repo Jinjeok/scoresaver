@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { SheetViewer } from "@/components/sheet-viewer/SheetViewer";
 import { Music, Settings, LogIn } from "lucide-react";
 import type { AudioTrackWithUrl } from "@/types/sheet";
@@ -34,6 +34,16 @@ export default async function SharePage({ params }: SharePageProps) {
       .eq("id", user.id)
       .single();
     isAdmin = profile?.is_admin ?? false;
+  }
+
+  // If sheet is not public, require admin login
+  if (!sheet.is_public) {
+    if (!user) {
+      redirect("/auth/login");
+    }
+    if (!isAdmin) {
+      notFound();
+    }
   }
 
   // Get tracks and sync markers via RPC
