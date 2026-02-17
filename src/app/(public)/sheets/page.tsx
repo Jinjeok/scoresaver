@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { SheetCard } from "@/components/sheet-viewer/SheetCard";
 import { Search } from "lucide-react";
@@ -67,7 +68,7 @@ export default async function SheetsPage({ searchParams }: SheetsPageProps) {
 
         {allTags && allTags.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            <a
+            <Link
               href="/sheets"
               className={`px-3 py-1 text-sm rounded-full transition-colors ${
                 !tag
@@ -76,9 +77,9 @@ export default async function SheetsPage({ searchParams }: SheetsPageProps) {
               }`}
             >
               전체
-            </a>
+            </Link>
             {allTags.map((t) => (
-              <a
+              <Link
                 key={t.id}
                 href={`/sheets?tag=${encodeURIComponent(t.name)}`}
                 className={`px-3 py-1 text-sm rounded-full transition-colors ${
@@ -88,7 +89,7 @@ export default async function SheetsPage({ searchParams }: SheetsPageProps) {
                 }`}
               >
                 {t.name}
-              </a>
+              </Link>
             ))}
           </div>
         )}

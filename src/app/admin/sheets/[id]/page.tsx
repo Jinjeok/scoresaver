@@ -31,7 +31,7 @@ export default function AdminSheetDetailPage() {
   }, [params.id]);
 
   useEffect(() => {
-    fetchSheet();
+    fetchSheet(); // eslint-disable-line react-hooks/set-state-in-effect
   }, [fetchSheet]);
 
   const toggleVisibility = async () => {

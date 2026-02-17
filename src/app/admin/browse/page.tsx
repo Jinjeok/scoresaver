@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Search } from "lucide-react";
 import { BrowseContent } from "./BrowseContent";
@@ -78,7 +79,7 @@ export default async function AdminBrowsePage({
 
         {allTags && allTags.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            <a
+            <Link
               href="/admin/browse"
               className={`px-3 py-1 text-sm rounded-full transition-colors ${
                 !tag
@@ -87,9 +88,9 @@ export default async function AdminBrowsePage({
               }`}
             >
               전체
-            </a>
+            </Link>
             {allTags.map((t) => (
-              <a
+              <Link
                 key={t.id}
                 href={`/admin/browse?tag=${encodeURIComponent(t.name)}`}
                 className={`px-3 py-1 text-sm rounded-full transition-colors ${
@@ -99,7 +100,7 @@ export default async function AdminBrowsePage({
                 }`}
               >
                 {t.name}
-              </a>
+              </Link>
             ))}
           </div>
         )}

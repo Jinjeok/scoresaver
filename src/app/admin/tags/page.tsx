@@ -14,7 +14,7 @@ export default function AdminTagsPage() {
   }, []);
 
   useEffect(() => {
-    fetchTags();
+    fetchTags(); // eslint-disable-line react-hooks/set-state-in-effect
   }, [fetchTags]);
 
   const addTag = async (e: React.FormEvent) => {

@@ -40,7 +40,7 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(
     const selectedTrack = tracks[selectedTrackIndex];
 
     useEffect(() => {
-      setIsPlaying(false);
+      setIsPlaying(false); // eslint-disable-line react-hooks/set-state-in-effect
       setCurrentTime(0);
     }, [selectedTrackIndex]);
 
