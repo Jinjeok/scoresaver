@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth";
 import { handleApiError } from "@/lib/utils/errors";
 import { createTrackSchema } from "@/lib/utils/validation";
-import { getAudioTrackPath } from "@/lib/utils/storage";
 
 export async function GET(
   _request: NextRequest,
@@ -39,24 +37,18 @@ export async function POST(
     const supabase = await createServerSupabaseClient();
     await requireAdmin(supabase);
 
-    const formData = await request.formData();
-    const audioFile = formData.get("audio") as File | null;
-    const metadataStr = formData.get("metadata") as string;
+    const body = await request.json();
+    const metadata = createTrackSchema.parse(body);
 
-    if (!audioFile) {
+    const { storage_path, mime_type, file_size_bytes } = body;
+
+    if (!storage_path) {
       return NextResponse.json(
-        { error: "음원 파일이 필요합니다" },
+        { error: "storage_path가 필요합니다" },
         { status: 400 }
       );
     }
 
-    const metadata = createTrackSchema.parse(JSON.parse(metadataStr));
-
-    // Determine mime type from file
-    const mimeType = audioFile.type || "audio/mpeg";
-    const ext = mimeType.split("/")[1] || "mp3";
-
-    // Create track record
     const { data: track, error: insertError } = await supabase
       .from("audio_tracks")
       .insert({
@@ -65,9 +57,9 @@ export async function POST(
         track_type: metadata.track_type,
         key_shift: metadata.key_shift,
         sort_order: metadata.sort_order,
-        storage_path: "placeholder",
-        mime_type: mimeType,
-        file_size_bytes: audioFile.size,
+        storage_path,
+        mime_type: mime_type || "audio/mpeg",
+        file_size_bytes: file_size_bytes || 0,
       })
       .select()
       .single();
@@ -79,35 +71,7 @@ export async function POST(
       );
     }
 
-    // Upload audio file
-    const audioPath = getAudioTrackPath(id, track.id, ext);
-    const supabaseAdmin = createAdminClient();
-    const audioBuffer = Buffer.from(await audioFile.arrayBuffer());
-
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from("audio-files")
-      .upload(audioPath, audioBuffer, {
-        contentType: mimeType,
-        upsert: true,
-      });
-
-    if (uploadError) {
-      await supabase.from("audio_tracks").delete().eq("id", track.id);
-      return NextResponse.json(
-        { error: `음원 업로드 실패: ${uploadError.message}` },
-        { status: 500 }
-      );
-    }
-
-    // Update track with storage path
-    const { data: updatedTrack } = await supabase
-      .from("audio_tracks")
-      .update({ storage_path: audioPath })
-      .eq("id", track.id)
-      .select()
-      .single();
-
-    return NextResponse.json(updatedTrack, { status: 201 });
+    return NextResponse.json(track, { status: 201 });
   } catch (error) {
     return handleApiError(error);
   }

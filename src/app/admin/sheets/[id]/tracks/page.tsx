@@ -6,6 +6,8 @@ import { FileDropzone } from "@/components/shared/FileDropzone";
 import { TRACK_TYPES, type TrackType } from "@/lib/constants/track-types";
 import { Trash2, GripVertical } from "lucide-react";
 import { formatDuration, formatFileSize } from "@/lib/utils/format";
+import { getAudioTrackPath } from "@/lib/utils/storage";
+import { createClient } from "@/lib/supabase/client";
 import type { AudioTrack } from "@/types/sheet";
 
 export default function AdminTracksPage() {
@@ -34,21 +36,38 @@ export default function AdminTracksPage() {
   const handleUpload = async (file: File) => {
     setUploading(true);
     try {
-      const body = new FormData();
-      body.append("audio", file);
-      body.append(
-        "metadata",
-        JSON.stringify({
+      const supabase = createClient();
+      const mimeType = file.type || "audio/mpeg";
+      const ext = mimeType.split("/")[1] || "mp3";
+      const trackId = crypto.randomUUID();
+      const storagePath = getAudioTrackPath(params.id as string, trackId, ext);
+
+      // Upload directly to Supabase Storage (bypasses Vercel 4.5MB limit)
+      const { error: uploadError } = await supabase.storage
+        .from("audio-files")
+        .upload(storagePath, file, {
+          contentType: mimeType,
+          upsert: true,
+        });
+
+      if (uploadError) {
+        alert(`음원 업로드 실패: ${uploadError.message}`);
+        return;
+      }
+
+      // Create DB record via API (metadata only, no file)
+      const res = await fetch(`/api/sheets/${params.id}/tracks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           label: newLabel || TRACK_TYPES[newTrackType],
           track_type: newTrackType,
           key_shift: newKeyShift,
           sort_order: tracks.length,
-        })
-      );
-
-      const res = await fetch(`/api/sheets/${params.id}/tracks`, {
-        method: "POST",
-        body,
+          storage_path: storagePath,
+          mime_type: mimeType,
+          file_size_bytes: file.size,
+        }),
       });
 
       if (res.ok) {
@@ -58,7 +77,9 @@ export default function AdminTracksPage() {
         fetchTracks();
       } else {
         const err = await res.json();
-        alert(err.error || "업로드 실패");
+        alert(err.error || "트랙 생성 실패");
+        // Clean up uploaded file on DB failure
+        await supabase.storage.from("audio-files").remove([storagePath]);
       }
     } finally {
       setUploading(false);
