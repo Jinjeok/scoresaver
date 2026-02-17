@@ -185,4 +185,4 @@ GitHub `main` 브랜치에 push하면 자동으로:
 | `audio-files` | 음원 트랙 | `{sheet_id}/{track_id}.mp3` |
 | `musicxml-files` | MusicXML 파일 | `{sheet_id}/score.musicxml` |
 
-모든 파일은 비공개이며, Signed URL (1시간 만료)을 통해 접근합니다.
+모든 파일은 비공개이며, Signed URL (1시간 만료)을 통해 접근합니다
