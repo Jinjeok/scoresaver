@@ -44,6 +44,8 @@ export function PdfViewer({
   const isAutoScrollRef = useRef(false);
   const viewportRef = useRef<{ width: number; height: number } | null>(null);
   const normalScaleRef = useRef<number | null>(null);
+  const scaleRef = useRef<number>(1);
+  const pinchRef = useRef<{ initialDistance: number; initialScale: number } | null>(null);
 
   const onDocumentLoadSuccess = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -189,6 +191,58 @@ export function PdfViewer({
       document.exitFullscreen();
       setIsFullscreen(false);
     }
+  }, []);
+
+  // Keep scaleRef in sync with state
+  useEffect(() => {
+    scaleRef.current = scale ?? 1;
+  }, [scale]);
+
+  // Pinch-to-zoom on touch devices
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const getDistance = (touches: TouchList) => {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        pinchRef.current = {
+          initialDistance: getDistance(e.touches),
+          initialScale: scaleRef.current,
+        };
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && pinchRef.current) {
+        e.preventDefault();
+        const newDistance = getDistance(e.touches);
+        const ratio = newDistance / pinchRef.current.initialDistance;
+        const newScale = Math.max(0.5, Math.min(3.0, pinchRef.current.initialScale * ratio));
+        setScale(newScale);
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        pinchRef.current = null;
+      }
+    };
+
+    container.addEventListener("touchstart", handleTouchStart, { passive: true });
+    container.addEventListener("touchmove", handleTouchMove, { passive: false });
+    container.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      container.removeEventListener("touchstart", handleTouchStart);
+      container.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("touchend", handleTouchEnd);
+    };
   }, []);
 
   // 'f' key to toggle fullscreen
@@ -373,7 +427,7 @@ export function PdfViewer({
       {/* Keyboard hint (normal mode) */}
       {!isFullscreen && (
         <p className="text-xs text-gray-600 mt-2">
-          ← → 페이지 이동 · Space 재생/정지 · F 전체화면
+          ← → 페이지 이동 · Space 재생/정지 · F 전체화면 · 핀치 줌 지원
         </p>
       )}
     </div>

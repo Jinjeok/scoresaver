@@ -66,6 +66,20 @@ export interface SyncMarker {
   created_at: string;
 }
 
+export interface SheetPdf {
+  id: string;
+  sheet_id: string;
+  label: string;
+  storage_path: string;
+  sort_order: number;
+  page_count: number | null;
+  created_at: string;
+}
+
+export interface SheetPdfWithUrl extends SheetPdf {
+  signedUrl?: string;
+}
+
 export interface Tag {
   id: string;
   name: string;

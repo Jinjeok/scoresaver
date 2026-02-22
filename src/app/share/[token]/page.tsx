@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound, redirect } from "next/navigation";
 import { SheetViewer } from "@/components/sheet-viewer/SheetViewer";
 import { Music, Settings, LogIn } from "lucide-react";
-import type { AudioTrackWithUrl } from "@/types/sheet";
+import type { AudioTrackWithUrl, SheetPdfWithUrl } from "@/types/sheet";
 
 interface SharePageProps {
   params: Promise<{ token: string }>;
@@ -59,9 +59,30 @@ export default async function SharePage({ params }: SharePageProps) {
   // Generate signed URLs
   const supabaseAdmin = createAdminClient();
 
-  const { data: pdfUrl } = await supabaseAdmin.storage
-    .from("sheet-pdfs")
-    .createSignedUrl(sheet.pdf_storage_path, 3600);
+  // Fetch sheet_pdfs for this sheet
+  const { data: rawPdfs } = await supabaseAdmin
+    .from("sheet_pdfs")
+    .select("*")
+    .eq("sheet_id", sheet.id)
+    .order("sort_order", { ascending: true });
+
+  const sheetPdfs: SheetPdfWithUrl[] = await Promise.all(
+    (rawPdfs || []).map(async (pdf: { storage_path: string; [key: string]: unknown }) => {
+      const { data } = await supabaseAdmin.storage
+        .from("sheet-pdfs")
+        .createSignedUrl(pdf.storage_path, 3600);
+      return { ...pdf, signedUrl: data?.signedUrl } as SheetPdfWithUrl;
+    })
+  );
+
+  // Legacy fallback
+  let legacyPdfUrl: string | undefined;
+  if (sheetPdfs.length === 0 && sheet.pdf_storage_path) {
+    const { data: pdfUrl } = await supabaseAdmin.storage
+      .from("sheet-pdfs")
+      .createSignedUrl(sheet.pdf_storage_path, 3600);
+    legacyPdfUrl = pdfUrl?.signedUrl;
+  }
 
   // Generate MusicXML signed URL
   let musicXmlUrl: string | undefined;
@@ -121,7 +142,8 @@ export default async function SharePage({ params }: SharePageProps) {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <SheetViewer
           sheet={sheet}
-          pdfUrl={pdfUrl?.signedUrl}
+          pdfFiles={sheetPdfs}
+          pdfUrl={legacyPdfUrl}
           musicXmlUrl={musicXmlUrl}
           tracks={signedTracks}
           syncMarkers={syncMarkers ?? []}

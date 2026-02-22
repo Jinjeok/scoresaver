@@ -9,6 +9,7 @@ import {
   EyeOff,
   Trash2,
   Music2,
+  FileText,
   Settings,
   RefreshCw,
 } from "lucide-react";
@@ -187,6 +188,13 @@ export default function AdminSheetDetailPage() {
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-3">관리</h2>
             <div className="space-y-2">
+              <Link
+                href={`/admin/sheets/${sheet.id}/pdfs`}
+                className="flex items-center gap-2 w-full px-3 py-2 border border-gray-500 rounded-lg text-sm text-gray-900 hover:bg-gray-50 transition-colors"
+              >
+                <FileText className="h-4 w-4" />
+                PDF 파일 관리
+              </Link>
               <Link
                 href={`/admin/sheets/${sheet.id}/tracks`}
                 className="flex items-center gap-2 w-full px-3 py-2 border border-gray-500 rounded-lg text-sm text-gray-900 hover:bg-gray-50 transition-colors"

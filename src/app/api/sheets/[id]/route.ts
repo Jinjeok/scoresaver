@@ -18,7 +18,7 @@ export async function GET(
     const { data: sheet, error } = await supabase
       .from("sheets")
       .select(
-        "*, sheet_tags(tag_id, tags(id, name)), audio_tracks(*), sync_markers(*)"
+        "*, sheet_tags(tag_id, tags(id, name)), audio_tracks(*), sync_markers(*), sheet_pdfs(*)"
       )
       .eq("id", id)
       .single();
@@ -159,7 +159,7 @@ export async function DELETE(
     // Fetch sheet for cleanup
     const { data: sheet } = await supabase
       .from("sheets")
-      .select("*, audio_tracks(*)")
+      .select("*, audio_tracks(*), sheet_pdfs(*)")
       .eq("id", id)
       .single();
 
@@ -172,10 +172,24 @@ export async function DELETE(
 
     const supabaseAdmin = createAdminClient();
 
-    // Delete storage files
-    await supabaseAdmin.storage
-      .from("sheet-pdfs")
-      .remove([sheet.pdf_storage_path]);
+    // Delete storage files: sheet_pdfs versions + legacy pdf_storage_path
+    const pdfPathsToDelete: string[] = [];
+    if (sheet.sheet_pdfs?.length > 0) {
+      pdfPathsToDelete.push(
+        ...sheet.sheet_pdfs.map((p: { storage_path: string }) => p.storage_path)
+      );
+    }
+    // Also delete legacy path if it's not already covered by sheet_pdfs
+    const legacyPath = sheet.pdf_storage_path;
+    if (
+      legacyPath &&
+      !pdfPathsToDelete.includes(legacyPath)
+    ) {
+      pdfPathsToDelete.push(legacyPath);
+    }
+    if (pdfPathsToDelete.length > 0) {
+      await supabaseAdmin.storage.from("sheet-pdfs").remove(pdfPathsToDelete);
+    }
 
     if (sheet.thumbnail_path) {
       await supabaseAdmin.storage

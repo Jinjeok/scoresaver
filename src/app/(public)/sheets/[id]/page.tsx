@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { SheetViewer } from "@/components/sheet-viewer/SheetViewer";
-import type { AudioTrackWithUrl } from "@/types/sheet";
+import type { AudioTrackWithUrl, SheetPdfWithUrl } from "@/types/sheet";
 
 interface SheetDetailPageProps {
   params: Promise<{ id: string }>;
@@ -16,7 +16,7 @@ export default async function SheetDetailPage({
 
   const { data: sheet, error } = await supabase
     .from("sheets")
-    .select("*, audio_tracks(*), sync_markers(*)")
+    .select("*, audio_tracks(*), sync_markers(*), sheet_pdfs(*)")
     .eq("id", id)
     .single();
 
@@ -24,11 +24,28 @@ export default async function SheetDetailPage({
 
   const supabaseAdmin = createAdminClient();
 
-  const { data: pdfUrlData } = await supabaseAdmin.storage
-    .from("sheet-pdfs")
-    .createSignedUrl(sheet.pdf_storage_path, 3600);
+  // Generate signed URLs for all PDF versions
+  const sheetPdfs: SheetPdfWithUrl[] = await Promise.all(
+    (sheet.sheet_pdfs || [])
+      .sort((a: { sort_order: number }, b: { sort_order: number }) => a.sort_order - b.sort_order)
+      .map(async (pdf: { storage_path: string; [key: string]: unknown }) => {
+        const { data } = await supabaseAdmin.storage
+          .from("sheet-pdfs")
+          .createSignedUrl(pdf.storage_path, 3600);
+        return { ...pdf, signedUrl: data?.signedUrl } as SheetPdfWithUrl;
+      })
+  );
 
-  // Generate MusicXML signed URL (pass URL to client, not content)
+  // Legacy fallback: if no sheet_pdfs, use pdf_storage_path
+  let legacyPdfUrl: string | undefined;
+  if (sheetPdfs.length === 0 && sheet.pdf_storage_path) {
+    const { data: pdfUrlData } = await supabaseAdmin.storage
+      .from("sheet-pdfs")
+      .createSignedUrl(sheet.pdf_storage_path, 3600);
+    legacyPdfUrl = pdfUrlData?.signedUrl;
+  }
+
+  // Generate MusicXML signed URL
   let musicXmlUrl: string | undefined;
   if (sheet.musicxml_storage_path) {
     const { data: mxmlUrlData } = await supabaseAdmin.storage
@@ -51,7 +68,8 @@ export default async function SheetDetailPage({
   return (
     <SheetViewer
       sheet={sheet}
-      pdfUrl={pdfUrlData?.signedUrl}
+      pdfFiles={sheetPdfs}
+      pdfUrl={legacyPdfUrl}
       musicXmlUrl={musicXmlUrl}
       tracks={signedTracks}
       syncMarkers={sheet.sync_markers || []}

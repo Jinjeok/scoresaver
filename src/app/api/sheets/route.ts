@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
     const pdfFile = formData.get("pdf") as File | null;
     const musicXmlFile = formData.get("musicxml") as File | null;
     const metadataStr = formData.get("metadata") as string;
+    const pdfLabel = (formData.get("pdfLabel") as string | null) || "악보";
 
     if (!pdfFile) {
       return NextResponse.json(
@@ -163,6 +164,14 @@ export async function POST(request: NextRequest) {
         ...(musicXmlPath ? { musicxml_storage_path: musicXmlPath } : {}),
       })
       .eq("id", sheet.id);
+
+    // Create sheet_pdfs record for the first PDF
+    await supabaseAdmin.from("sheet_pdfs").insert({
+      sheet_id: sheet.id,
+      label: pdfLabel,
+      storage_path: pdfPath,
+      sort_order: 0,
+    });
 
     // Handle tags
     if (tags.length > 0) {

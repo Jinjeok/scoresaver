@@ -8,7 +8,7 @@ import type { AudioPlayerHandle } from "@/components/audio-player/AudioPlayer";
 import { useSyncPlayback } from "@/lib/hooks/useSyncPlayback";
 import { cn } from "@/lib/utils/cn";
 import { formatDuration } from "@/lib/utils/format";
-import type { Sheet, AudioTrackWithUrl, SyncMarker } from "@/types/sheet";
+import type { Sheet, AudioTrackWithUrl, SyncMarker, SheetPdfWithUrl } from "@/types/sheet";
 
 // Dynamic imports to avoid SSR issues (react-pdf needs DOM, OSMD is large)
 const PdfViewer = dynamic(
@@ -43,7 +43,9 @@ type ViewMode = "pdf" | "musicxml";
 
 interface SheetViewerProps {
   sheet: Sheet;
+  /** Legacy single PDF URL (backwards compat). Ignored when pdfFiles is non-empty. */
   pdfUrl?: string;
+  pdfFiles?: SheetPdfWithUrl[];
   musicXmlUrl?: string;
   tracks: AudioTrackWithUrl[];
   syncMarkers?: SyncMarker[];
@@ -52,15 +54,25 @@ interface SheetViewerProps {
 export function SheetViewer({
   sheet,
   pdfUrl,
+  pdfFiles = [],
   musicXmlUrl,
   tracks,
   syncMarkers = [],
 }: SheetViewerProps) {
-  const hasPdf = Boolean(pdfUrl);
+  // Resolve effective PDF list: prefer pdfFiles, fall back to legacy pdfUrl
+  const effectivePdfs: SheetPdfWithUrl[] =
+    pdfFiles.length > 0
+      ? pdfFiles
+      : pdfUrl
+      ? [{ id: "legacy", sheet_id: sheet.id, label: "악보", storage_path: "", sort_order: 0, page_count: null, created_at: "", signedUrl: pdfUrl }]
+      : [];
+
+  const hasPdf = effectivePdfs.length > 0;
   const hasMusicXml = Boolean(musicXmlUrl);
   const defaultMode: ViewMode = hasPdf ? "pdf" : "musicxml";
 
   const [viewMode, setViewMode] = useState<ViewMode>(defaultMode);
+  const [activePdfIndex, setActivePdfIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState(0);
   const hasSyncMarkers = syncMarkers.length > 0;
@@ -86,6 +98,13 @@ export function SheetViewer({
   );
 
   const displayPage = hasSyncMarkers ? syncPage : currentPage;
+
+  // Reset page when switching PDFs
+  const handlePdfTabChange = (index: number) => {
+    setActivePdfIndex(index);
+    setCurrentPage(1);
+    setNumPages(0);
+  };
 
   // Keyboard navigation for PDF + Space for audio
   useEffect(() => {
@@ -115,6 +134,8 @@ export function SheetViewer({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [viewMode, hasPdf, numPages]);
 
+  const activePdf = effectivePdfs[activePdfIndex];
+
   return (
     <div className="space-y-6">
       {/* Sheet info */}
@@ -132,7 +153,7 @@ export function SheetViewer({
         )}
       </div>
 
-      {/* View mode toggle */}
+      {/* View mode toggle (PDF vs MusicXML) */}
       {hasPdf && hasMusicXml && (
         <div className="flex gap-1 p-1 bg-gray-100 rounded-lg w-fit">
           <button
@@ -165,64 +186,87 @@ export function SheetViewer({
         <MusicXmlViewer musicXmlUrl={musicXmlUrl} />
       )}
 
-      {viewMode === "pdf" && pdfUrl && (
-        <PdfViewer
-          url={pdfUrl}
-          currentPage={displayPage}
-          onPageChange={setCurrentPage}
-          onNumPagesChange={setNumPages}
-          fullscreenExtra={
-            tracks.length > 0 ? (
-              <div className="flex items-center gap-2">
-                {/* Track selector */}
-                {tracks.length > 1 && (
-                  <div className="relative">
-                    <select
-                      value={selectedTrackIndex}
-                      onChange={(e) => {
-                        const idx = parseInt(e.target.value);
-                        setSelectedTrackIndex(idx);
-                        audioPlayerRef.current?.selectTrack(idx);
-                      }}
-                      className="appearance-none bg-gray-700 text-gray-200 text-xs pl-2 pr-6 py-1 rounded cursor-pointer border-none outline-none"
-                    >
-                      {tracks.map((t, i) => (
-                        <option key={t.id} value={i}>{t.label}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-1 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400 pointer-events-none" />
-                  </div>
-                )}
+      {viewMode === "pdf" && hasPdf && (
+        <div>
+          {/* PDF version tabs (only shown when multiple PDFs exist) */}
+          {effectivePdfs.length > 1 && (
+            <div className="flex gap-1 p-1 bg-gray-100 rounded-lg w-fit mb-3">
+              {effectivePdfs.map((pdf, index) => (
                 <button
-                  onClick={() => audioPlayerRef.current?.togglePlay()}
-                  className="p-1.5 rounded hover:bg-gray-700 text-gray-300 cursor-pointer"
-                  title={isAudioPlaying ? "정지 (Space)" : "재생 (Space)"}
-                >
-                  {isAudioPlaying ? (
-                    <Pause className="h-5 w-5" />
-                  ) : (
-                    <Play className="h-5 w-5" />
+                  key={pdf.id}
+                  onClick={() => handlePdfTabChange(index)}
+                  className={cn(
+                    "px-3 py-1.5 text-sm rounded-md transition-colors cursor-pointer",
+                    activePdfIndex === index
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
                   )}
+                >
+                  {pdf.label}
                 </button>
-                <span className="text-xs text-gray-400 min-w-[36px] text-right">
-                  {formatDuration(audioCurrentTime)}
-                </span>
-                <input
-                  type="range"
-                  min={0}
-                  max={audioDuration || 0}
-                  step={0.1}
-                  value={audioCurrentTime}
-                  onChange={(e) => audioPlayerRef.current?.seek(parseFloat(e.target.value))}
-                  className="w-32 h-1 accent-indigo-500"
-                />
-                <span className="text-xs text-gray-400 min-w-[36px]">
-                  {formatDuration(audioDuration)}
-                </span>
-              </div>
-            ) : undefined
-          }
-        />
+              ))}
+            </div>
+          )}
+
+          <PdfViewer
+            key={activePdf.id}
+            url={activePdf.signedUrl ?? ""}
+            currentPage={displayPage}
+            onPageChange={setCurrentPage}
+            onNumPagesChange={setNumPages}
+            fullscreenExtra={
+              tracks.length > 0 ? (
+                <div className="flex items-center gap-2">
+                  {/* Track selector */}
+                  {tracks.length > 1 && (
+                    <div className="relative">
+                      <select
+                        value={selectedTrackIndex}
+                        onChange={(e) => {
+                          const idx = parseInt(e.target.value);
+                          setSelectedTrackIndex(idx);
+                          audioPlayerRef.current?.selectTrack(idx);
+                        }}
+                        className="appearance-none bg-gray-700 text-gray-200 text-xs pl-2 pr-6 py-1 rounded cursor-pointer border-none outline-none"
+                      >
+                        {tracks.map((t, i) => (
+                          <option key={t.id} value={i}>{t.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-1 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400 pointer-events-none" />
+                    </div>
+                  )}
+                  <button
+                    onClick={() => audioPlayerRef.current?.togglePlay()}
+                    className="p-1.5 rounded hover:bg-gray-700 text-gray-300 cursor-pointer"
+                    title={isAudioPlaying ? "정지 (Space)" : "재생 (Space)"}
+                  >
+                    {isAudioPlaying ? (
+                      <Pause className="h-5 w-5" />
+                    ) : (
+                      <Play className="h-5 w-5" />
+                    )}
+                  </button>
+                  <span className="text-xs text-gray-400 min-w-[36px] text-right">
+                    {formatDuration(audioCurrentTime)}
+                  </span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={audioDuration || 0}
+                    step={0.1}
+                    value={audioCurrentTime}
+                    onChange={(e) => audioPlayerRef.current?.seek(parseFloat(e.target.value))}
+                    className="w-32 h-1 accent-indigo-500"
+                  />
+                  <span className="text-xs text-gray-400 min-w-[36px]">
+                    {formatDuration(audioDuration)}
+                  </span>
+                </div>
+              ) : undefined
+            }
+          />
+        </div>
       )}
 
       {!hasPdf && !hasMusicXml && (

@@ -10,6 +10,7 @@ export default function NewSheetPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfLabel, setPdfLabel] = useState("악보");
   const [musicXmlFile, setMusicXmlFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -37,6 +38,7 @@ export default function NewSheetPage() {
     try {
       const body = new FormData();
       body.append("pdf", pdfFile);
+      body.append("pdfLabel", pdfLabel || "악보");
       if (musicXmlFile) {
         body.append("musicxml", musicXmlFile);
       }
@@ -159,6 +161,17 @@ export default function NewSheetPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             PDF 악보 파일
           </h2>
+          <div className="mb-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              PDF 버전 이름
+            </label>
+            <input
+              value={pdfLabel}
+              onChange={(e) => setPdfLabel(e.target.value)}
+              placeholder="총보, Tab 만, 코드 악보 등"
+              className="w-full px-3 py-2 border border-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
           <FileDropzone
             accept=".pdf"
             onFileSelect={setPdfFile}
