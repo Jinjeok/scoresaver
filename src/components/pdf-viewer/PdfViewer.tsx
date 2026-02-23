@@ -39,15 +39,21 @@ export function PdfViewer({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // Wrapper around Document — CSS transform target during pinch (no React re-render)
+  const docWrapperRef = useRef<HTMLDivElement>(null);
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const visiblePageRef = useRef(1);
   const isAutoScrollRef = useRef(false);
   const viewportRef = useRef<{ width: number; height: number } | null>(null);
   const normalScaleRef = useRef<number | null>(null);
-  // Refs for touch handlers (avoid stale closures in the effect with [] deps)
+  // Refs for touch handlers (avoid stale closures — effect has [] deps)
   const scaleRef = useRef<number>(1);
   const numPagesRef = useRef<number>(0);
-  const pinchRef = useRef<{ initialDistance: number; initialScale: number } | null>(null);
+  const pinchRef = useRef<{
+    initialDistance: number;
+    initialScale: number;
+    currentRatio: number;
+  } | null>(null);
   const swipeStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const goToPageRef = useRef<(page: number) => void>(() => {});
 
@@ -212,6 +218,20 @@ export function PdfViewer({
       return Math.sqrt(dx * dx + dy * dy);
     };
 
+    const applyPinchTransform = (ratio: number) => {
+      const el = docWrapperRef.current;
+      if (!el) return;
+      el.style.transform = `scale(${ratio})`;
+      el.style.transformOrigin = "center top";
+    };
+
+    const clearPinchTransform = () => {
+      const el = docWrapperRef.current;
+      if (!el) return;
+      el.style.transform = "";
+      el.style.transformOrigin = "";
+    };
+
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
         // Two fingers: prevent browser from intercepting (zoom/pan)
@@ -219,10 +239,11 @@ export function PdfViewer({
         pinchRef.current = {
           initialDistance: getDistance(e.touches),
           initialScale: scaleRef.current,
+          currentRatio: 1,
         };
         swipeStartRef.current = null;
       } else if (e.touches.length === 1) {
-        // One finger: let browser handle native scroll, track for swipe
+        // One finger: track for swipe, let browser handle scroll
         pinchRef.current = null;
         swipeStartRef.current = {
           x: e.touches[0].clientX,
@@ -234,16 +255,31 @@ export function PdfViewer({
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2 && pinchRef.current) {
-        // Prevent browser from panning with 2 fingers while pinching
         e.preventDefault();
         const newDistance = getDistance(e.touches);
         const ratio = newDistance / pinchRef.current.initialDistance;
-        const newScale = Math.max(0.5, Math.min(3.0, pinchRef.current.initialScale * ratio));
-        setScale(newScale);
+        // Clamp ratio so final scale stays within [0.5, 3.0]
+        const clampedRatio = Math.max(
+          0.5 / pinchRef.current.initialScale,
+          Math.min(3.0 / pinchRef.current.initialScale, ratio)
+        );
+        pinchRef.current.currentRatio = clampedRatio;
+        // Visual feedback via CSS transform — NO React state update, NO re-render
+        applyPinchTransform(clampedRatio);
       }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
+      // Commit pinch to React state only once when fingers lift
+      if (pinchRef.current && pinchRef.current.currentRatio !== 1) {
+        const finalScale = Math.max(
+          0.5,
+          Math.min(3.0, pinchRef.current.initialScale * pinchRef.current.currentRatio)
+        );
+        clearPinchTransform();
+        setScale(finalScale); // single re-render here
+      }
+
       if (e.touches.length < 2) {
         pinchRef.current = null;
       }
@@ -254,14 +290,11 @@ export function PdfViewer({
         const dx = e.changedTouches[0].clientX - start.x;
         const dy = e.changedTouches[0].clientY - start.y;
         const dt = Date.now() - start.time;
-        // Horizontal swipe: fast, clearly horizontal, at least 50px
         if (dt < 400 && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
           if (dx < 0) {
-            // Swipe left → next page
             const next = Math.min(visiblePageRef.current + 1, numPagesRef.current);
             if (next !== visiblePageRef.current) goToPageRef.current(next);
           } else {
-            // Swipe right → previous page
             const prev = Math.max(visiblePageRef.current - 1, 1);
             if (prev !== visiblePageRef.current) goToPageRef.current(prev);
           }
@@ -270,9 +303,6 @@ export function PdfViewer({
       }
     };
 
-    // passive: false for touchstart so we can preventDefault on 2-finger touches
-    //   (single-finger: no preventDefault called → native scroll still works)
-    // passive: false for touchmove so we can preventDefault on 2-finger moves
     container.addEventListener("touchstart", handleTouchStart, { passive: false });
     container.addEventListener("touchmove", handleTouchMove, { passive: false });
     container.addEventListener("touchend", handleTouchEnd, { passive: true });
@@ -407,9 +437,6 @@ export function PdfViewer({
       {/* PDF Document */}
       <div
         ref={scrollContainerRef}
-        // touch-action: pan-y → browser handles vertical scroll,
-        //   JS handles pinch zoom and horizontal swipe.
-        // touch-action: none in fullscreen → JS handles everything.
         style={{ touchAction: isFullscreen ? "none" : "pan-y" }}
         className={
           isFullscreen
@@ -417,52 +444,55 @@ export function PdfViewer({
             : "border border-gray-200 rounded-lg overflow-auto bg-gray-50 w-full max-h-[85vh]"
         }
       >
-        <Document
-          file={url}
-          onLoadSuccess={onDocumentLoadSuccess}
-          loading={
-            <div className="flex items-center justify-center p-20 text-gray-600">
-              PDF 로딩 중...
-            </div>
-          }
-          error={
-            <div className="flex items-center justify-center p-20 text-red-400">
-              PDF를 불러올 수 없습니다
-            </div>
-          }
-        >
-          {isFullscreen
-            ? numPages > 0 &&
-              scale !== null && (
-                <Page
-                  pageNumber={visiblePage}
-                  scale={activeScale}
-                  className="flex justify-center"
-                />
-              )
-            : numPages > 0 &&
-              scale !== null &&
-              Array.from({ length: numPages }, (_, i) => i + 1).map(
-                (pageNum) => (
-                  <div
-                    key={pageNum}
-                    ref={(el) => {
-                      if (el) pageRefs.current.set(pageNum, el);
-                      else pageRefs.current.delete(pageNum);
-                    }}
-                    className={
-                      pageNum < numPages ? "border-b border-gray-500" : ""
-                    }
-                  >
-                    <Page
-                      pageNumber={pageNum}
-                      scale={activeScale}
-                      className="flex justify-center"
-                    />
-                  </div>
+        {/* docWrapperRef: CSS transform target during pinch (bypasses React render) */}
+        <div ref={docWrapperRef}>
+          <Document
+            file={url}
+            onLoadSuccess={onDocumentLoadSuccess}
+            loading={
+              <div className="flex items-center justify-center p-20 text-gray-600">
+                PDF 로딩 중...
+              </div>
+            }
+            error={
+              <div className="flex items-center justify-center p-20 text-red-400">
+                PDF를 불러올 수 없습니다
+              </div>
+            }
+          >
+            {isFullscreen
+              ? numPages > 0 &&
+                scale !== null && (
+                  <Page
+                    pageNumber={visiblePage}
+                    scale={activeScale}
+                    className="flex justify-center"
+                  />
                 )
-              )}
-        </Document>
+              : numPages > 0 &&
+                scale !== null &&
+                Array.from({ length: numPages }, (_, i) => i + 1).map(
+                  (pageNum) => (
+                    <div
+                      key={pageNum}
+                      ref={(el) => {
+                        if (el) pageRefs.current.set(pageNum, el);
+                        else pageRefs.current.delete(pageNum);
+                      }}
+                      className={
+                        pageNum < numPages ? "border-b border-gray-500" : ""
+                      }
+                    >
+                      <Page
+                        pageNumber={pageNum}
+                        scale={activeScale}
+                        className="flex justify-center"
+                      />
+                    </div>
+                  )
+                )}
+          </Document>
+        </div>
       </div>
 
       {/* Keyboard hint (normal mode) */}
