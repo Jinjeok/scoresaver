@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useLayoutEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import type { ReactNode } from "react";
 import {
@@ -53,7 +53,13 @@ export function PdfViewer({
     initialDistance: number;
     initialScale: number;
     currentRatio: number;
+    originX: number;        // pinch midpoint X relative to docWrapper (px)
+    originY: number;        // pinch midpoint Y relative to docWrapper (px)
+    pinchScreenY: number;   // pinch midpoint Y in screen coords
+    containerScrollTop: number;
+    containerRectTop: number;
   } | null>(null);
+  const pendingScrollRef = useRef<number | null>(null);
   const swipeStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const goToPageRef = useRef<(page: number) => void>(() => {});
 
@@ -146,6 +152,14 @@ export function PdfViewer({
   useEffect(() => { numPagesRef.current = numPages; }, [numPages]);
   goToPageRef.current = goToPage;
 
+  // After pinch-zoom re-render, scroll so the pinch point stays fixed
+  useLayoutEffect(() => {
+    if (pendingScrollRef.current !== null && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = pendingScrollRef.current;
+      pendingScrollRef.current = null;
+    }
+  }, [scale]);
+
   // When parent changes controlled page, navigate to it
   useEffect(() => {
     if (
@@ -220,9 +234,9 @@ export function PdfViewer({
 
     const applyPinchTransform = (ratio: number) => {
       const el = docWrapperRef.current;
-      if (!el) return;
+      if (!el || !pinchRef.current) return;
+      el.style.transformOrigin = `${pinchRef.current.originX}px ${pinchRef.current.originY}px`;
       el.style.transform = `scale(${ratio})`;
-      el.style.transformOrigin = "center top";
     };
 
     const clearPinchTransform = () => {
@@ -236,10 +250,19 @@ export function PdfViewer({
       if (e.touches.length === 2) {
         // Two fingers: prevent browser from intercepting (zoom/pan)
         e.preventDefault();
+        const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        const wrapperRect = docWrapperRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
+        const container = scrollContainerRef.current;
         pinchRef.current = {
           initialDistance: getDistance(e.touches),
           initialScale: scaleRef.current,
           currentRatio: 1,
+          originX: midX - wrapperRect.left,
+          originY: midY - wrapperRect.top,
+          pinchScreenY: midY,
+          containerScrollTop: container?.scrollTop ?? 0,
+          containerRectTop: container?.getBoundingClientRect().top ?? 0,
         };
         swipeStartRef.current = null;
       } else if (e.touches.length === 1) {
@@ -272,10 +295,12 @@ export function PdfViewer({
     const handleTouchEnd = (e: TouchEvent) => {
       // Commit pinch to React state only once when fingers lift
       if (pinchRef.current && pinchRef.current.currentRatio !== 1) {
-        const finalScale = Math.max(
-          0.5,
-          Math.min(3.0, pinchRef.current.initialScale * pinchRef.current.currentRatio)
-        );
+        const { initialScale, currentRatio, pinchScreenY, containerScrollTop, containerRectTop } = pinchRef.current;
+        const finalScale = Math.max(0.5, Math.min(3.0, initialScale * currentRatio));
+        // Keep the pinch point fixed after re-render by adjusting scrollTop
+        const pinchInContainer = pinchScreenY - containerRectTop;
+        const newScrollTop = Math.max(0, (containerScrollTop + pinchInContainer) * (finalScale / initialScale) - pinchInContainer);
+        pendingScrollRef.current = newScrollTop;
         clearPinchTransform();
         setScale(finalScale); // single re-render here
       }
