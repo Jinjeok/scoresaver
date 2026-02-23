@@ -44,8 +44,12 @@ export function PdfViewer({
   const isAutoScrollRef = useRef(false);
   const viewportRef = useRef<{ width: number; height: number } | null>(null);
   const normalScaleRef = useRef<number | null>(null);
+  // Refs for touch handlers (avoid stale closures in the effect with [] deps)
   const scaleRef = useRef<number>(1);
+  const numPagesRef = useRef<number>(0);
   const pinchRef = useRef<{ initialDistance: number; initialScale: number } | null>(null);
+  const swipeStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const goToPageRef = useRef<(page: number) => void>(() => {});
 
   const onDocumentLoadSuccess = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,7 +57,6 @@ export function PdfViewer({
       const total = pdf.numPages;
       setNumPages(total);
       onNumPagesChange?.(total);
-      // Auto-fit scale on first load
       if (scrollContainerRef.current) {
         pdf.getPage(1).then(
           (page: {
@@ -132,6 +135,11 @@ export function PdfViewer({
     [numPages, isFullscreen, scrollToPage, onPageChange]
   );
 
+  // Keep refs in sync for touch handlers
+  useEffect(() => { scaleRef.current = scale ?? 1; }, [scale]);
+  useEffect(() => { numPagesRef.current = numPages; }, [numPages]);
+  goToPageRef.current = goToPage;
+
   // When parent changes controlled page, navigate to it
   useEffect(() => {
     if (
@@ -193,12 +201,7 @@ export function PdfViewer({
     }
   }, []);
 
-  // Keep scaleRef in sync with state
-  useEffect(() => {
-    scaleRef.current = scale ?? 1;
-  }, [scale]);
-
-  // Pinch-to-zoom on touch devices
+  // Pinch-to-zoom + swipe page navigation on touch devices
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -211,15 +214,26 @@ export function PdfViewer({
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
+        // Two fingers: start pinch. Record initial state.
         pinchRef.current = {
           initialDistance: getDistance(e.touches),
           initialScale: scaleRef.current,
+        };
+        swipeStartRef.current = null;
+      } else if (e.touches.length === 1) {
+        // One finger: start swipe tracking.
+        pinchRef.current = null;
+        swipeStartRef.current = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY,
+          time: Date.now(),
         };
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2 && pinchRef.current) {
+        // Prevent browser from panning with 2 fingers while pinching
         e.preventDefault();
         const newDistance = getDistance(e.touches);
         const ratio = newDistance / pinchRef.current.initialDistance;
@@ -232,11 +246,34 @@ export function PdfViewer({
       if (e.touches.length < 2) {
         pinchRef.current = null;
       }
+
+      // Swipe: single finger lifted, all fingers off screen
+      const start = swipeStartRef.current;
+      if (e.changedTouches.length === 1 && e.touches.length === 0 && start) {
+        const dx = e.changedTouches[0].clientX - start.x;
+        const dy = e.changedTouches[0].clientY - start.y;
+        const dt = Date.now() - start.time;
+        // Horizontal swipe: fast, clearly horizontal, at least 50px
+        if (dt < 400 && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+          if (dx < 0) {
+            // Swipe left → next page
+            const next = Math.min(visiblePageRef.current + 1, numPagesRef.current);
+            if (next !== visiblePageRef.current) goToPageRef.current(next);
+          } else {
+            // Swipe right → previous page
+            const prev = Math.max(visiblePageRef.current - 1, 1);
+            if (prev !== visiblePageRef.current) goToPageRef.current(prev);
+          }
+        }
+        swipeStartRef.current = null;
+      }
     };
 
+    // passive: true for touchstart (touch-action CSS handles pinch prevention)
+    // passive: false for touchmove so we can preventDefault on 2-finger moves
     container.addEventListener("touchstart", handleTouchStart, { passive: true });
     container.addEventListener("touchmove", handleTouchMove, { passive: false });
-    container.addEventListener("touchend", handleTouchEnd);
+    container.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     return () => {
       container.removeEventListener("touchstart", handleTouchStart);
@@ -368,6 +405,10 @@ export function PdfViewer({
       {/* PDF Document */}
       <div
         ref={scrollContainerRef}
+        // touch-action: pan-y → browser handles vertical scroll,
+        //   JS handles pinch zoom and horizontal swipe.
+        // touch-action: none in fullscreen → JS handles everything.
+        style={{ touchAction: isFullscreen ? "none" : "pan-y" }}
         className={
           isFullscreen
             ? "flex-1 flex items-center justify-center overflow-hidden"
@@ -389,8 +430,7 @@ export function PdfViewer({
           }
         >
           {isFullscreen
-            ? // Fullscreen: single page
-              numPages > 0 &&
+            ? numPages > 0 &&
               scale !== null && (
                 <Page
                   pageNumber={visiblePage}
@@ -398,8 +438,7 @@ export function PdfViewer({
                   className="flex justify-center"
                 />
               )
-            : // Normal: all pages
-              numPages > 0 &&
+            : numPages > 0 &&
               scale !== null &&
               Array.from({ length: numPages }, (_, i) => i + 1).map(
                 (pageNum) => (
@@ -427,7 +466,7 @@ export function PdfViewer({
       {/* Keyboard hint (normal mode) */}
       {!isFullscreen && (
         <p className="text-xs text-gray-600 mt-2">
-          ← → 페이지 이동 · Space 재생/정지 · F 전체화면 · 핀치 줌 지원
+          ← → 페이지 이동 · Space 재생/정지 · F 전체화면 · 핀치 줌 · 좌우 스와이프
         </p>
       )}
     </div>
