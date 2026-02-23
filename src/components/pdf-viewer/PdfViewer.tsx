@@ -214,14 +214,15 @@ export function PdfViewer({
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
-        // Two fingers: start pinch. Record initial state.
+        // Two fingers: prevent browser from intercepting (zoom/pan)
+        e.preventDefault();
         pinchRef.current = {
           initialDistance: getDistance(e.touches),
           initialScale: scaleRef.current,
         };
         swipeStartRef.current = null;
       } else if (e.touches.length === 1) {
-        // One finger: start swipe tracking.
+        // One finger: let browser handle native scroll, track for swipe
         pinchRef.current = null;
         swipeStartRef.current = {
           x: e.touches[0].clientX,
@@ -269,9 +270,10 @@ export function PdfViewer({
       }
     };
 
-    // passive: true for touchstart (touch-action CSS handles pinch prevention)
+    // passive: false for touchstart so we can preventDefault on 2-finger touches
+    //   (single-finger: no preventDefault called → native scroll still works)
     // passive: false for touchmove so we can preventDefault on 2-finger moves
-    container.addEventListener("touchstart", handleTouchStart, { passive: true });
+    container.addEventListener("touchstart", handleTouchStart, { passive: false });
     container.addEventListener("touchmove", handleTouchMove, { passive: false });
     container.addEventListener("touchend", handleTouchEnd, { passive: true });
 
